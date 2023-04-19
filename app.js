@@ -97,3 +97,66 @@ app.post("/districts/", async (request, response) => {
   console.log(dbResponse.lastID);
   response.send("District Successfully Added");
 });
+
+//API 4
+app.get("/districts/:districtId/", async (request, response) => {
+  const { districtId } = request.params;
+  const getQuery = `
+        SELECT 
+            * 
+        FROM
+            district
+        WHERE 
+            district_id = ${districtId};
+    `;
+  const districtDetails = await db.get(getQuery);
+
+  const convertSnackCasetoCamelCase = (snackCase) => {
+    return {
+      districtId: snackCase.district_id,
+      districtName: snackCase.district_name,
+      stateId: snackCase.state_id,
+      cases: snackCase.cases,
+      cured: snackCase.cured,
+      active: snackCase.active,
+      deaths: snackCase.deaths,
+    };
+  };
+
+  response.send(convertSnackCasetoCamelCase(districtDetails));
+});
+
+//API 5
+app.delete("/districts/:districtId/", async (request, response) => {
+  const { districtId } = request.params;
+  const deleteQuery = `
+        DELETE FROM
+        district
+        WHERE
+        district_id = ${districtId}; 
+    `;
+
+  await db.run(deleteQuery);
+  response.send("District Removed");
+});
+
+//API 6
+app.put("/districts/:districtId/", async (request, response) => {
+  const { districtId } = request.params;
+  const requestBody = request.body;
+  console.log(requestBody);
+  const { districtName, stateId, cases, cured, active, deaths } = requestBody;
+  const putQuery = `
+        UPDATE 
+            district 
+        SET 
+       district_name = '${districtName}',
+       state_id = ${stateId},
+       cases = ${cases},
+       cured = ${cured},
+       active = ${active},
+       deaths = ${deaths};
+  `;
+  await db.run(putQuery);
+  console.log("District Details Updated");
+});
